@@ -1,0 +1,14 @@
+{
+    "name": "sfw2/guestbook",
+    "type": "library",
+    "license": "GNU AFFERO GENERAL PUBLIC LICENSE Version 3",
+
+    "require": {
+        "php": "^7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "SFW2\\Guestbook\\": "src/"
+        }
+    }
+}
