@@ -1,0 +1,138 @@
+<?php
+
+/**
+ *  SFW2 - SimpleFrameWork
+ *
+ *  Copyright (C) 2018  Stefan Paproth
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/agpl.txt>.
+ *
+ */
+
+?>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <?php if(isset($this->title)): ?>
+            <h2><?php echo($this->title); ?></h2>
+            <?php endif; ?>
+            <p class="p-heading" style="margin-bottom: 0.8rem;">
+                <?php if($this->permission->createAllowed()): ?>
+                <form id="<?php echo($this->getPathSimplified()); ?>" class="noshow">
+                    <div class="alert alert-primary" role="alert">
+                        Einträge werde zunächst geprüft bevor sie für alle sichtbar sind!
+                        Sollte Dein Eintrag also nicht sofort sichtbar sein dann hab ein wenig geduld und schaue später nochmal vorbei...
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Name" name="name" value="" max="50" title="Gib hier bitte deinen Namen ein." />
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <?php /*
+                    <div class="form-group">
+                        <input type="email" class="form-control" placeholder="E-Mail" name="email" />
+                        <div class="invalid-feedback"></div>
+                    </div>
+                     */ ?>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Ort" name="location" />
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Deine Nachricht" class="form-control" style="height: 8rem;" name="message" title="Gib hier bitte deine Nachricht ein."></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group checkbox">
+                        <div class="form-check">
+                            <input class="form-check-input" name="terms" type="checkbox" id="terms" value="1" />
+                            <label class="form-check-label" for="terms">
+                                Ich habe die <a href="/datenschutz" target="_blank">Datenschutz­erklärung</a> gelesen
+                            </label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </form>
+                Hier ist unser Gästebuch. Wenn Du magst dann lass
+                <a
+                    href=""
+                    data-toggle="modal"
+                    data-target="#createDialogModal"
+                    data-url="<?php echo($this->getCurrentPath()); ?>"
+                    data-form-id="<?php echo($this->getPathSimplified()); ?>"
+                >einen Eintrag</a> zurück.
+                <?php endif; ?>
+                <br>
+                Auf der folgenden Unterseite kannst Du <a href="<?php echo($this->getCurrentPath()); ?>?do=showAll">alle Gästebucheinträge</a> in voller Länge anschauen.
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="slider-container">
+                <div class="swiper-container card-slider">
+                    <div class="swiper-wrapper">
+                        <?php foreach($this->entries as $key => $entry): ?>
+                        <div class="swiper-slide slider">
+                            <div
+                                class="card clickable"
+                                data-item-nb="<?php echo($key); ?>"
+                                data-item-id="<?php echo($entry['id']); ?>"
+                                data-url="<?php echo($this->getCurrentPath()); ?>"
+                                style="cursor: pointer;"
+                            >
+                                <div class="card-body">
+                                    <div class="testimonial-text"><?php echo($entry['message']); ?></div>
+                                    <div class="testimonial-author"><?php echo($entry['author']); ?></div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+    (function($) {
+        var cardSlider = new Swiper('.card-slider', {
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false
+            },
+            loop: (<?php echo($this->count); ?> > 3),
+            slidesPerView: Math.min(3, <?php echo($this->count); ?>),
+            spaceBetween: 20,
+            breakpoints: {
+                // when window is <= 992px
+                992: {
+                    slidesPerView: Math.min(2, <?php echo($this->count); ?>)
+                },
+                // when window is <= 768px
+                768: {
+                    slidesPerView: 1
+                }
+            }
+        });
+    })(jQuery);
+
+    $('.clickable').click(function() {
+        let id = $(this).data('item-nb');
+        let anchor = '';
+        if(id > 0) {
+            anchor = '#item-' + --id;
+        }
+        window.location.href = $(this).data('url') + '?do=showAll&id=' + $(this).data('item-id') + anchor;
+    });
+</script>
