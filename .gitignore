@@ -1,1 +1,4 @@
-/nbproject/private/
+/src/vendor
+
+# netbeans project files
+/nbproject/
