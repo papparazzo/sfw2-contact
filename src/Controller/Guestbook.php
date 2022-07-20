@@ -277,7 +277,7 @@ class Guestbook extends AbstractController {
             "Bcc" => "stefan.paproth@springer-singgemeinschaft.de" // FIXME
         ];
 
-        if(mail($emailTo, $subject, $text, $headers) == false) {
+        if(!mail($emailTo, $subject, $text, $headers)) {
             throw new Exception("Could not send body <$text> to <$emailTo>");
         }
     }
