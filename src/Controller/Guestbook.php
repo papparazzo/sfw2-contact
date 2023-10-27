@@ -20,16 +20,14 @@
  *
  */
 
-namespace SFW2\Module\SFW2\Guestbook\Controller;
+namespace SFW2\Guestbook\Controller;
 
-use SFW2\Routing\Result\Content;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\AbstractController;
-use SFW2\Routing\Resolver\ResolverException;
-use SFW2\Routing\PathMap\PathMap;
 
-use SFW2\Controllers\Controller\Helper\DateTimeHelperTrait;
-use SFW2\Controllers\Controller\Helper\EMailHelperTrait;
-
+use SFW2\Routing\ResponseEngine;
 use SFW2\Validator\Ruleset;
 use SFW2\Validator\Validator;
 use SFW2\Validator\Validators\IsNotEmpty;
@@ -37,43 +35,49 @@ use SFW2\Validator\Validators\IsAvailable;
 use SFW2\Validator\Validators\IsEMailAddress;
 use SFW2\Validator\Validators\IsTrue;
 
-use SFW2\Core\Database;
 
 class Guestbook extends AbstractController {
 
-    use DateTimeHelperTrait;
-    use EMailHelperTrait;
+   # use DateTimeHelperTrait;
+  #  use EMailHelperTrait;
 
-    protected Database $database;
     protected string $title;
     protected string $description;
-    protected string $path;
 
-    public function __construct(int $pathId, Database $database, PathMap $path, string $title = '') {
-        parent::__construct($pathId);
-        $this->database = $database;
-        $this->path  = $path->getPath($pathId);
-
+    public function __construct(
+        protected DatabaseInterface $database
+    ) {
         $this->title = 'Gästebuch';
         $this->description = 'Hier ist unser Gästebuch.';
     }
 
-    public function index(bool $all = false): Content {
-        unset($all);
-        $content = new Content('SFW2\\Guestbook\\guestbook');
+    public function index(Request $request, ResponseEngine $responseEngine): Response {
+        $pathId = (int)$request->getAttribute('sfw2_routing')['path_id'];
 
 
-        $cnt = $this->database->selectCount('{TABLE_PREFIX}_guestbook', "WHERE `PathId` = '%s' AND `Visible` = '1'", [$this->pathId]);
-        $content->assign('count', $cnt);
-        $content->assign('entries', $this->getEntries(true));
-        $content->assign('title', $this->title);
-        $content->assign('description', $this->description);
-        return $content;
+
+
+        $content = [];
+
+
+        #$cnt = $this->database->selectCount('{TABLE_PREFIX}_guestbook', "WHERE `PathId` = '%s' AND `Visible` = '1'", [$this->pathId]);
+        #$content->assign('count', $cnt);
+        #$content->assign('entries', $this->getEntries(true));
+        #$content->assign('title', $this->title);
+        #$content->assign('description', $this->description);
+
+
+        return $responseEngine->render(
+            $request,
+            "SFW2\\Guestbook\\Guestbook",
+            $content
+        );
     }
 
-    public function unlockEntryByHash() : Content {
+    public function unlockEntryByHash(Request $request, ResponseEngine $responseEngine): Response {
         $hash = filter_input(INPUT_GET, 'hash', FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[a-f0-9]{32}$/"]]);
         if($hash === false || is_null($hash)) {
+           # throw new
             throw new ResolverException("invalid hash given", ResolverException::INVALID_DATA_GIVEN);
         }
 
@@ -90,7 +94,7 @@ class Guestbook extends AbstractController {
         return $content;
     }
 
-    public function deleteEntryByHash() : Content {
+    public function deleteEntryByHash(Request $request, ResponseEngine $responseEngine): Response {
         $hash = filter_input(INPUT_GET, 'hash', FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[a-f0-9]{32}$/"]]);
 
         if($hash === false || is_null($hash)) {
@@ -133,7 +137,7 @@ class Guestbook extends AbstractController {
         return $content;
     }
 
-    public function delete(bool $all = false) : Content {
+    public function delete(Request $request, ResponseEngine $responseEngine): Response {
         unset($all);
         $entryId = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         if($entryId === false) {
@@ -148,7 +152,7 @@ class Guestbook extends AbstractController {
         return new Content();
     }
 
-    public function create() : Content {
+    public function create(Request $request, ResponseEngine $responseEngine): Response {
         $content = new Content();
 
         $rulset = new Ruleset();
@@ -205,7 +209,7 @@ class Guestbook extends AbstractController {
         return $content;
     }
 
-    public function showAll() : Content {
+    public function showAll(Request $request, ResponseEngine $responseEngine): Response {
         $entryId = (int)filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
         $content = new Content('SFW2\\Guestbook\\showAll');
