@@ -22,8 +22,13 @@
 
 namespace SFW2\Guestbook\Controller;
 
+use _PHPStan_95cdbe577\Nette\Neon\Exception;
+use DateTime;
+use DateTimeZone;
+use IntlDateFormatter;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use SFW2\Core\HttpExceptions\HttpUnprocessableContent;
 use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\AbstractController;
 
@@ -52,20 +57,18 @@ class Guestbook extends AbstractController {
     }
 
     public function index(Request $request, ResponseEngine $responseEngine): Response {
+
+
+        #$pathId = (int)$request->getAttribute('sfw2_project')['webmaster_mail_address'];
+        #$path = (int)$request->getAttribute('sfw2_project')['path'];
+
         $pathId = (int)$request->getAttribute('sfw2_routing')['path_id'];
 
-
-
-
-        $content = [];
-
-
-        #$cnt = $this->database->selectCount('{TABLE_PREFIX}_guestbook', "WHERE `PathId` = '%s' AND `Visible` = '1'", [$this->pathId]);
-        #$content->assign('count', $cnt);
-        #$content->assign('entries', $this->getEntries(true));
-        #$content->assign('title', $this->title);
-        #$content->assign('description', $this->description);
-
+        $content = [
+            'title' => $this->title,
+            'description' => $this->description,
+            'entries' => $this->getEntries(false, $pathId)
+        ];
 
         return $responseEngine->render(
             $request,
@@ -74,14 +77,20 @@ class Guestbook extends AbstractController {
         );
     }
 
+    /**
+     * @throws HttpUnprocessableContent
+     */
     public function unlockEntryByHash(Request $request, ResponseEngine $responseEngine): Response {
+        // FIXME replace filter_input
         $hash = filter_input(INPUT_GET, 'hash', FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[a-f0-9]{32}$/"]]);
         if($hash === false || is_null($hash)) {
-           # throw new
-            throw new ResolverException("invalid hash given", ResolverException::INVALID_DATA_GIVEN);
+            throw new HttpUnprocessableContent("invalid hash given");
         }
 
-        $content = new Content('SFW2\\Guestbook\\unlockEntry');
+        $content = [
+            'confirm' => false
+        ];
+
         $content->assign('confirm', false);
         $stmt = "UPDATE `{TABLE_PREFIX}_guestbook` SET `Visible` = '1' WHERE `UnlockHash` = '%s'";
         if($this->database->update($stmt, [$hash]) != 1) {
@@ -91,17 +100,27 @@ class Guestbook extends AbstractController {
             $content->assign('error', false);
             $content->assign('text', 'Der Gästebucheintrag wurde erfolgreich freigeschaltet und ist nun für alle sichtbar.');
         }
-        return $content;
+
+        return $responseEngine->render(
+            $request,
+            "SFW2\\Guestbook\\UnlockEntry",
+            $content
+        );
     }
 
+    /**
+     * @throws HttpUnprocessableContent
+     */
     public function deleteEntryByHash(Request $request, ResponseEngine $responseEngine): Response {
         $hash = filter_input(INPUT_GET, 'hash', FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[a-f0-9]{32}$/"]]);
 
         if($hash === false || is_null($hash)) {
-            throw new ResolverException("invalid hash given", ResolverException::INVALID_DATA_GIVEN);
+            throw new HttpUnprocessableContent("invalid hash given");
         }
-        $content = new Content('SFW2\\Guestbook\\unlockEntry');
-        $content->assign('confirm', false);
+
+        $content = [
+            'confirm' => false
+        ];
 
         $stmt = "SELECT * FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = '%s'";
         $entry = $this->database->selectRow($stmt, [$hash]);
@@ -129,29 +148,40 @@ class Guestbook extends AbstractController {
 
         $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = '%s'";
         if(!$this->database->delete($stmt, [$hash])) {
-            throw new ResolverException("invalid hash given", ResolverException::INVALID_DATA_GIVEN);
+            throw new HttpUnprocessableContent("invalid hash given");
         }
         $content->assign('error', false);
         $content->assign('text', 'Der Gästebucheintrag wurde erfolgreich gelöscht.');
         $content->assign('confirm', false);
-        return $content;
+
+        return $responseEngine->render(
+            $request,
+            "SFW2\\Guestbook\\UnlockEntry",
+            $content
+        );
     }
 
+    /**
+     * @throws HttpUnprocessableContent
+     */
     public function delete(Request $request, ResponseEngine $responseEngine): Response {
-        unset($all);
+
         $entryId = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         if($entryId === false) {
-            throw new ResolverException("invalid data given", ResolverException::INVALID_DATA_GIVEN);
+            throw new HttpUnprocessableContent("invalid hash given");
         }
 
         $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `Id` = '%s' AND `PathId` = '%s'";
 
         if(!$this->database->delete($stmt, [$entryId, $this->pathId])) {
-            throw new ResolverException("no entry found", ResolverException::NO_PERMISSION);
+            throw new HttpUnprocessableContent("no entry found");
         }
         return new Content();
     }
 
+    /**
+     * @throws Exception
+     */
     public function create(Request $request, ResponseEngine $responseEngine): Response {
         $content = new Content();
 
@@ -209,16 +239,6 @@ class Guestbook extends AbstractController {
         return $content;
     }
 
-    public function showAll(Request $request, ResponseEngine $responseEngine): Response {
-        $entryId = (int)filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-
-        $content = new Content('SFW2\\Guestbook\\showAll');
-        $content->assign('title', 'Gäste&shy;buch&shy;einträge');
-        $content->assign('entries', $this->getEntries(false));
-        $content->assign('highlightId', $entryId);
-        return $content;
-    }
-
     protected function getFormatedMessage(string $text, bool $truncated = false) : string {
         $maxLength = 200;
 
@@ -226,6 +246,10 @@ class Guestbook extends AbstractController {
             $lastPos = ($maxLength - 3) - strlen($text);
             $text = substr($text, 0, strrpos($text, ' ', $lastPos)) . '...';
         }
+
+        // FIXME remove this when databaseentries were formatted
+        $text = str_replace('\\r\\n', PHP_EOL, $text);
+        $text = str_replace('\\"', '"', $text);
 
         return nl2br(htmlspecialchars($text));
     }
@@ -245,6 +269,9 @@ class Guestbook extends AbstractController {
         return $author;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function sendRequestMail(string $message, string $name, string $location, string $email, string $unlockHash) : void {
 
         $emailTo = 'vorstand@springer-singgemeinschaft.de'; // FIXME
@@ -286,14 +313,18 @@ class Guestbook extends AbstractController {
         }
     }
 
-    protected function getEntries(bool $truncateMessage) : array {
+    /**
+     * @throws \Exception
+     */
+    protected function getEntries(bool $truncateMessage, int $pathId): array {
+
         $stmt =
             "SELECT `Id`, `CreationDate`, `Message`, `Name`, `Location`, `Email` " .
             "FROM `{TABLE_PREFIX}_guestbook` AS `guestbook` " .
-            "WHERE `PathId` = '%s' AND `Visible` = '1' " .
+            "WHERE `PathId` = %s AND `Visible` = '1' " .
             "ORDER BY `guestbook`.`CreationDate` DESC ";
 
-        $rows = $this->database->select($stmt, [$this->pathId]);
+        $rows = $this->database->select($stmt, [$pathId]);
         $max = strlen((string)count($rows));
         $max = max($max, 3);
         $i = 0;
@@ -310,6 +341,29 @@ class Guestbook extends AbstractController {
             $entries[] = $entry;
         }
         return $entries;
+    }
+
+    // TODO: Make this a trait
+    /**
+     * @throws \Exception
+     * @deprecated
+     */
+    protected function getShortDate($date = 'now', string $dateTimeZone = 'Europe/Berlin'): bool|string
+    {
+        if($date === null) {
+            return '';
+        }
+
+         $local_date = IntlDateFormatter::create(
+                'de',
+                IntlDateFormatter::LONG,
+                IntlDateFormatter::NONE,
+                $dateTimeZone,
+                null,
+                null
+            );
+
+        return $local_date->format(new DateTime($date, new DateTimeZone($dateTimeZone)));
     }
 }
 
