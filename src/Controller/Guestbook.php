@@ -56,9 +56,8 @@ class Guestbook extends AbstractController {
         $this->description = 'Hier ist unser Gästebuch.';
     }
 
-    public function index(Request $request, ResponseEngine $responseEngine): Response {
-
-
+    public function index(Request $request, ResponseEngine $responseEngine): Response
+    {
         #$pathId = (int)$request->getAttribute('sfw2_project')['webmaster_mail_address'];
         #$path = (int)$request->getAttribute('sfw2_project')['path'];
 
@@ -91,14 +90,13 @@ class Guestbook extends AbstractController {
             'confirm' => false
         ];
 
-        $content->assign('confirm', false);
         $stmt = "UPDATE `{TABLE_PREFIX}_guestbook` SET `Visible` = '1' WHERE `UnlockHash` = '%s'";
         if($this->database->update($stmt, [$hash]) != 1) {
-            $content->assign('error', true);
-            $content->assign('text', 'Entweder wurde der Eintrag bereits freigeschaltet oder gelöscht!');
+            $content['error'] = true;
+            $content['text'] = 'Entweder wurde der Eintrag bereits freigeschaltet oder gelöscht!';
         } else {
-            $content->assign('error', false);
-            $content->assign('text', 'Der Gästebucheintrag wurde erfolgreich freigeschaltet und ist nun für alle sichtbar.');
+            $content['error'] = false;
+            $content['text'] = 'Der Gästebucheintrag wurde erfolgreich freigeschaltet und ist nun für alle sichtbar.';
         }
 
         return $responseEngine->render(
@@ -125,9 +123,14 @@ class Guestbook extends AbstractController {
         $stmt = "SELECT * FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = '%s'";
         $entry = $this->database->selectRow($stmt, [$hash]);
         if(empty($entry)) {
-            $content->assign('error', true);
-            $content->assign('text', 'Der Eintrag wurde bereits gelöscht!');
-            return $content;
+            $content['error'] = true;
+            $content['text'] = 'Der Eintrag wurde bereits gelöscht!';
+
+            return $responseEngine->render(
+                $request,
+                "SFW2\\Guestbook\\UnlockEntry",
+                $content
+            );
         }
 
         $confirmed = filter_input(INPUT_GET, 'confirmed', FILTER_VALIDATE_BOOLEAN);
@@ -140,19 +143,23 @@ class Guestbook extends AbstractController {
                 $_SERVER['HTTP_HOST'] . $this->path .
                 '?do=deleteEntryByHash&hash=' . $hash . '&confirmed=1';
 
-            $content->assign('urlDelete', $urlDelete);
-            $content->assign('entry', $entry);
-            $content->assign('confirm', true);
-            return $content;
+            $content['urlDelete'] = $urlDelete;
+            $content['entry'] = $entry;
+            $content['confirm'] = true;
+            return $responseEngine->render(
+                $request,
+                "SFW2\\Guestbook\\UnlockEntry",
+                $content
+            );
         }
 
         $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = '%s'";
         if(!$this->database->delete($stmt, [$hash])) {
             throw new HttpUnprocessableContent("invalid hash given");
         }
-        $content->assign('error', false);
-        $content->assign('text', 'Der Gästebucheintrag wurde erfolgreich gelöscht.');
-        $content->assign('confirm', false);
+        $content['error'] = false;
+        $content['text'] = 'Der Gästebucheintrag wurde erfolgreich gelöscht.';
+        $content['confirm'] = false;
 
         return $responseEngine->render(
             $request,
@@ -176,14 +183,16 @@ class Guestbook extends AbstractController {
         if(!$this->database->delete($stmt, [$entryId, $this->pathId])) {
             throw new HttpUnprocessableContent("no entry found");
         }
-        return new Content();
+         return $responseEngine->render(
+            $request,
+            "SFW2\\Guestbook\\UnlockEntry"
+        );
     }
 
     /**
      * @throws Exception
      */
     public function create(Request $request, ResponseEngine $responseEngine): Response {
-        $content = new Content();
 
         $rulset = new Ruleset();
         $rulset->addNewRules('name', new IsNotEmpty());
@@ -196,11 +205,14 @@ class Guestbook extends AbstractController {
 
         $validator = new Validator($rulset);
         $error = $validator->validate($_POST, $values);
-        $content->assignArray($values);
 
         if(!$error) {
-            $content->setError(true);
-            return $content;
+            #$content->setError(true);
+            return $responseEngine->render(
+                $request,
+                "SFW2\\Guestbook\\UnlockEntry",
+                $values
+            );
         }
 
         $unlockHash = md5(openssl_random_pseudo_bytes(64));
@@ -236,7 +248,10 @@ class Guestbook extends AbstractController {
             ]
         );
 
-        return $content;
+        return $responseEngine->render(
+            $request,
+            "SFW2\\Guestbook\\UnlockEntry",
+        );
     }
 
     protected function getFormatedMessage(string $text, bool $truncated = false) : string {
