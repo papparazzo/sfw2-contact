@@ -88,8 +88,8 @@ class Guestbook extends AbstractController {
             'confirm' => false
         ];
 
-        $stmt = "UPDATE `{TABLE_PREFIX}_guestbook` SET `Visible` = '1' WHERE `UnlockHash` = '%s'";
-        if($this->database->update($stmt, [$hash]) != 1) {
+        $stmt = "UPDATE `{TABLE_PREFIX}_guestbook` SET `Visible` = '1' WHERE `UnlockHash` = %s AND `PathId` = %s";
+        if($this->database->update($stmt, [$hash, $this->getPathId($request)]) != 1) {
             $content['error'] = true;
             $content['text'] = 'Entweder wurde der Eintrag bereits freigeschaltet oder gelöscht!';
         } else {
@@ -118,8 +118,8 @@ class Guestbook extends AbstractController {
             'confirm' => false
         ];
 
-        $stmt = "SELECT * FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = '%s'";
-        $entry = $this->database->selectRow($stmt, [$hash]);
+        $stmt = "SELECT * FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = %s AND PathId = %s";
+        $entry = $this->database->selectRow($stmt, [$hash, $this->getPathId($request)]);
         if(empty($entry)) {
             $content['error'] = true;
             $content['text'] = 'Der Eintrag wurde bereits gelöscht!';
