@@ -53,7 +53,7 @@ class Guestbook extends AbstractController {
         protected DatabaseInterface $database
     ) {
         $this->title = 'Gästebuch';
-        $this->description = 'Hier ist unser Gästebuch.';
+        $this->description = 'Hier ist unser Gästebuch. Wenn Du magst dann lass einen Eintrag zurück.';
     }
 
     public function index(Request $request, ResponseEngine $responseEngine): Response
