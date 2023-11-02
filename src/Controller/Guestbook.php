@@ -61,12 +61,10 @@ class Guestbook extends AbstractController {
         #$pathId = (int)$request->getAttribute('sfw2_project')['webmaster_mail_address'];
         #$path = (int)$request->getAttribute('sfw2_project')['path'];
 
-        $pathId = (int)$request->getAttribute('sfw2_routing')['path_id'];
-
         $content = [
             'title' => $this->title,
             'description' => $this->description,
-            'entries' => $this->getEntries(false, $pathId)
+            'entries' => $this->getEntries(false, $this->getPathId($request))
         ];
 
         return $responseEngine->render(
@@ -243,7 +241,7 @@ class Guestbook extends AbstractController {
                 $values['name']['value'],
                 $values['location']['value'],
                 $values['email']['value'],
-                $this->pathId,
+                $this->getPathId($request),
                 $unlockHash
             ]
         );
