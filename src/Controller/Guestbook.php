@@ -178,7 +178,7 @@ class Guestbook extends AbstractController {
 
         $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `Id` = %s AND `PathId` = %s";
 
-        if(!$this->database->delete($stmt, [$entryId, $this->pathId])) {
+        if(!$this->database->delete($stmt, [$entryId, $this->getPathId($request)])) {
             throw new HttpUnprocessableContent("no entry found");
         }
          return $responseEngine->render(
