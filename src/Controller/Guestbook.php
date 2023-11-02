@@ -151,7 +151,7 @@ class Guestbook extends AbstractController {
             );
         }
 
-        $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = '%s'";
+        $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = %s";
         if(!$this->database->delete($stmt, [$hash])) {
             throw new HttpUnprocessableContent("invalid hash given");
         }
@@ -176,7 +176,7 @@ class Guestbook extends AbstractController {
             throw new HttpUnprocessableContent("invalid hash given");
         }
 
-        $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `Id` = '%s' AND `PathId` = '%s'";
+        $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `Id` = %s AND `PathId` = %s";
 
         if(!$this->database->delete($stmt, [$entryId, $this->pathId])) {
             throw new HttpUnprocessableContent("no entry found");
