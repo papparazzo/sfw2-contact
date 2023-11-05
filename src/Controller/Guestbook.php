@@ -202,7 +202,14 @@ class Guestbook extends AbstractController {
         $values = [];
 
         $validator = new Validator($rulset);
-        $error = $validator->validate($_POST, $values);
+
+        $json = file_get_contents('php://input');
+
+        // Converts it into a PHP object
+        $data = json_decode($json, true);
+
+
+        $error = $validator->validate($data, $values);
 
         if(!$error) {
             #$content->setError(true);
