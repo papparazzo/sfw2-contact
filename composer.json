@@ -25,6 +25,7 @@
 
         "ext-gd": "*",
         "ext-intl": "*",
+        "ext-openssl": "*",
 
         "sfw2/core": "^3.0",
         "sfw2/validator": "^5.0",
