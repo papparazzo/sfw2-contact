@@ -28,6 +28,7 @@ use DateTimeZone;
 use IntlDateFormatter;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use SFW2\Core\HttpExceptions\HttpInternalServerError;
 use SFW2\Core\HttpExceptions\HttpUnprocessableContent;
 use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\AbstractController;
@@ -56,11 +57,11 @@ class Guestbook extends AbstractController {
         $this->description = 'Hier ist unser Gästebuch. Wenn Du magst dann lass einen Eintrag zurück.';
     }
 
+    /**
+     * @throws \Exception
+     */
     public function index(Request $request, ResponseEngine $responseEngine): Response
     {
-        #$pathId = (int)$request->getAttribute('sfw2_project')['webmaster_mail_address'];
-        #$path = (int)$request->getAttribute('sfw2_project')['path'];
-
         $content = [
             'title' => $this->title,
             'description' => $this->description,
@@ -188,6 +189,7 @@ class Guestbook extends AbstractController {
     }
 
     /**
+     * @throws HttpInternalServerError
      * @throws Exception
      */
     public function create(Request $request, ResponseEngine $responseEngine): Response {
