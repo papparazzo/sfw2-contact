@@ -70,8 +70,8 @@ class Guestbook extends AbstractController {
 
         return $responseEngine->render(
             $request,
-            "SFW2\\Guestbook\\Guestbook",
-            $content
+            $content,
+            "SFW2\\Guestbook\\Guestbook"
         );
     }
 
@@ -100,8 +100,8 @@ class Guestbook extends AbstractController {
 
         return $responseEngine->render(
             $request,
-            "SFW2\\Guestbook\\UnlockEntry",
-            $content
+            $content,
+            "SFW2\\Guestbook\\UnlockEntry"
         );
     }
 
@@ -127,8 +127,8 @@ class Guestbook extends AbstractController {
 
             return $responseEngine->render(
                 $request,
-                "SFW2\\Guestbook\\UnlockEntry",
-                $content
+                $content,
+                "SFW2\\Guestbook\\UnlockEntry"
             );
         }
 
@@ -147,8 +147,8 @@ class Guestbook extends AbstractController {
             $content['confirm'] = true;
             return $responseEngine->render(
                 $request,
-                "SFW2\\Guestbook\\UnlockEntry",
-                $content
+                $content,
+                "SFW2\\Guestbook\\UnlockEntry"
             );
         }
 
@@ -162,8 +162,8 @@ class Guestbook extends AbstractController {
 
         return $responseEngine->render(
             $request,
-            "SFW2\\Guestbook\\UnlockEntry",
-            $content
+            $content,
+            "SFW2\\Guestbook\\UnlockEntry"
         );
     }
 
@@ -183,8 +183,8 @@ class Guestbook extends AbstractController {
             throw new HttpUnprocessableContent("no entry found");
         }
          return $responseEngine->render(
-            $request,
-            "SFW2\\Guestbook\\UnlockEntry"
+            request: $request,
+            template: "SFW2\\Guestbook\\UnlockEntry"
         );
     }
 
@@ -255,10 +255,7 @@ class Guestbook extends AbstractController {
             ]
         );
 
-        return $responseEngine->render(
-            $request,
-            "SFW2\\Guestbook\\UnlockEntry",
-        );
+        return $responseEngine->render($request);
     }
 
     protected function getFormatedMessage(string $text, bool $truncated = false) : string {
