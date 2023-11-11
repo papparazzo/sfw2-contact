@@ -33,6 +33,7 @@ use SFW2\Core\HttpExceptions\HttpUnprocessableContent;
 use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\AbstractController;
 
+use SFW2\Routing\HelperTraits\getPathIdTrait;
 use SFW2\Routing\ResponseEngine;
 use SFW2\Validator\Ruleset;
 use SFW2\Validator\Validator;
@@ -43,6 +44,7 @@ use SFW2\Validator\Validators\IsTrue;
 
 
 class Guestbook extends AbstractController {
+   use getPathIdTrait;
 
    # use DateTimeHelperTrait;
   #  use EMailHelperTrait;
