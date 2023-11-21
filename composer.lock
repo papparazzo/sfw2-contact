@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ea7084da9baea7ff26e7e6e2e1a6a404",
+    "content-hash": "8f92df696ffb0521739c042ba1d76657",
     "packages": [
         {
             "name": "fig/http-message-util",
@@ -528,11 +528,17 @@
         },
         {
             "name": "sfw2/database",
-            "version": "dev-master",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:papparazzo/sfw2-database.git",
+                "reference": "2bb7799a87a4b56d9cfa1ef156ead0d015686af3"
+            },
             "dist": {
-                "type": "path",
-                "url": "../sfw2-database",
-                "reference": "946408c471f4cfa45f49d546068be5e31f7a7c9e"
+                "type": "zip",
+                "url": "https://api.github.com/repos/papparazzo/sfw2-database/zipball/2bb7799a87a4b56d9cfa1ef156ead0d015686af3",
+                "reference": "2bb7799a87a4b56d9cfa1ef156ead0d015686af3",
+                "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
@@ -551,17 +557,21 @@
             "license": [
                 "GNU AFFERO GENERAL PUBLIC LICENSE Version 3"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "time": "2023-11-11T13:42:50+00:00"
         },
         {
             "name": "sfw2/routing",
-            "version": "dev-master",
+            "version": "5.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:papparazzo/sfw2-routing.git",
+                "reference": "5d96e9f45b59d887af5667de22e753c232e5ec60"
+            },
             "dist": {
-                "type": "path",
-                "url": "../sfw2-routing",
-                "reference": "f17661aaaed5f3add6d97e32810bf353392a7755"
+                "type": "zip",
+                "url": "https://api.github.com/repos/papparazzo/sfw2-routing/zipball/5d96e9f45b59d887af5667de22e753c232e5ec60",
+                "reference": "5d96e9f45b59d887af5667de22e753c232e5ec60",
+                "shasum": ""
             },
             "require": {
                 "ext-fileinfo": "*",
@@ -588,22 +598,20 @@
             "license": [
                 "GNU AFFERO GENERAL PUBLIC LICENSE Version 3"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "time": "2023-11-16T19:30:00+00:00"
         },
         {
             "name": "sfw2/validator",
-            "version": "5.0.0",
+            "version": "6.1.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:papparazzo/sfw2-validator.git",
-                "reference": "e1378ac0a97df469b675c3bf46c28657019cdbe9"
+                "reference": "21d0dc66cf73b53dd26d8ace580095a47bf9a174"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/papparazzo/sfw2-validator/zipball/e1378ac0a97df469b675c3bf46c28657019cdbe9",
-                "reference": "e1378ac0a97df469b675c3bf46c28657019cdbe9",
+                "url": "https://api.github.com/repos/papparazzo/sfw2-validator/zipball/21d0dc66cf73b53dd26d8ace580095a47bf9a174",
+                "reference": "21d0dc66cf73b53dd26d8ace580095a47bf9a174",
                 "shasum": ""
             },
             "require": {
@@ -612,7 +620,7 @@
             },
             "require-dev": {
                 "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "^9"
+                "phpunit/phpunit": "^10"
             },
             "type": "library",
             "autoload": {
@@ -620,20 +628,22 @@
                     "SFW2\\Validator\\": "src/"
                 }
             },
+            "autoload-dev": {
+                "psr-4": {
+                    "SFW2\\Validator\\Test\\": "tests/unit/"
+                }
+            },
             "license": [
                 "GNU AFFERO GENERAL PUBLIC LICENSE Version 3"
             ],
             "description": "simple validation library",
-            "time": "2023-10-01T16:18:08+00:00"
+            "time": "2023-11-11T14:18:33+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "sfw2/routing": 20,
-        "sfw2/database": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
