@@ -22,9 +22,10 @@
 
 namespace SFW2\Guestbook\Controller;
 
-use _PHPStan_95cdbe577\Nette\Neon\Exception;
 use DateTime;
 use DateTimeZone;
+use Exception;
+use Fig\Http\Message\StatusCodeInterface;
 use IntlDateFormatter;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -33,7 +34,8 @@ use SFW2\Core\HttpExceptions\HttpUnprocessableContent;
 use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\AbstractController;
 
-use SFW2\Routing\HelperTraits\getPathIdTrait;
+use SFW2\Routing\HelperTraits\getPathTrait;
+use SFW2\Routing\HelperTraits\getUrlTrait;
 use SFW2\Routing\ResponseEngine;
 use SFW2\Validator\Ruleset;
 use SFW2\Validator\Validator;
@@ -44,7 +46,9 @@ use SFW2\Validator\Validators\IsTrue;
 
 
 class Guestbook extends AbstractController {
-   use getPathIdTrait;
+
+    use getPathTrait;
+    use getUrlTrait;
 
    # use DateTimeHelperTrait;
   #  use EMailHelperTrait;
@@ -60,7 +64,7 @@ class Guestbook extends AbstractController {
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function index(Request $request, ResponseEngine $responseEngine): Response
     {
@@ -79,6 +83,7 @@ class Guestbook extends AbstractController {
 
     /**
      * @throws HttpUnprocessableContent
+     * @noinspection PhpUnused
      */
     public function unlockEntryByHash(Request $request, ResponseEngine $responseEngine): Response {
         // FIXME replace filter_input
@@ -92,12 +97,15 @@ class Guestbook extends AbstractController {
         ];
 
         $stmt = "UPDATE `{TABLE_PREFIX}_guestbook` SET `Visible` = '1' WHERE `UnlockHash` = %s AND `PathId` = %s";
+
         if($this->database->update($stmt, [$hash, $this->getPathId($request)]) != 1) {
             $content['error'] = true;
             $content['text'] = 'Entweder wurde der Eintrag bereits freigeschaltet oder gelöscht!';
+            $content['url_back'] = $this->getPath($request);
         } else {
             $content['error'] = false;
             $content['text'] = 'Der Gästebucheintrag wurde erfolgreich freigeschaltet und ist nun für alle sichtbar.';
+            $content['url_back'] = $this->getPath($request);
         }
 
         return $responseEngine->render(
@@ -109,6 +117,7 @@ class Guestbook extends AbstractController {
 
     /**
      * @throws HttpUnprocessableContent
+     * @noinspection PhpUnused
      */
     public function deleteEntryByHash(Request $request, ResponseEngine $responseEngine): Response {
         $hash = filter_input(INPUT_GET, 'hash', FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[a-f0-9]{32}$/"]]);
@@ -136,17 +145,13 @@ class Guestbook extends AbstractController {
 
         $confirmed = filter_input(INPUT_GET, 'confirmed', FILTER_VALIDATE_BOOLEAN);
         if(!$confirmed) {
-            $entry['CreationDate'] = $this->getShortDate($entry['CreationDate']);
-            $entry['Message'     ] = $this->getFormatedMessage($entry['Message']);
-            $entry['Author'      ] = $this->getAuthor($entry['Name'], $entry['Location'], $entry["Email"]);
-            $urlDelete =
-                $_SERVER['REQUEST_SCHEME'] . '://' .
-                $_SERVER['HTTP_HOST'] . $this->path .
-                '?do=deleteEntryByHash&hash=' . $hash . '&confirmed=1';
+            $content['url_delete'   ] = "?do=deleteEntryByHash&hash=$hash&confirmed=1";
+            $content['confirm'      ]   = true;
+            $content['creation_date'] = $this->getShortDate($entry['CreationDate']);
+            $content['message'      ] = $this->getFormatedMessage($entry['Message']);
+            $content['author'       ] = $this->getAuthor($entry['Name'], $entry['Location'], $entry["Email"]);
+            $content['url_back'     ] = $this->getPath($request);
 
-            $content['urlDelete'] = $urlDelete;
-            $content['entry'] = $entry;
-            $content['confirm'] = true;
             return $responseEngine->render(
                 $request,
                 $content,
@@ -171,6 +176,7 @@ class Guestbook extends AbstractController {
 
     /**
      * @throws HttpUnprocessableContent
+     * @noinspection PhpMissingParentCallCommonInspection
      */
     public function delete(Request $request, ResponseEngine $responseEngine): Response {
 
@@ -192,48 +198,51 @@ class Guestbook extends AbstractController {
 
     /**
      * @throws HttpInternalServerError
-     * @throws Exception
+     * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function create(Request $request, ResponseEngine $responseEngine): Response {
-
+    public function create(Request $request, ResponseEngine $responseEngine): Response
+    {
         $rulset = new Ruleset();
         $rulset->addNewRules('name', new IsNotEmpty());
         $rulset->addNewRules('location', new IsAvailable());
         $rulset->addNewRules('message', new IsNotEmpty());
-        $rulset->addNewRules('email', new IsEMailAddress());
+        $rulset->addNewRules('email', new IsEMailAddress()); // TODO: enable e-mail in formular
         $rulset->addNewRules('terms', new IsTrue());
 
         $values = [];
 
         $validator = new Validator($rulset);
 
-        $json = file_get_contents('php://input');
-
-        // Converts it into a PHP object
-        $data = json_decode($json, true);
-
-
-        $error = $validator->validate($data, $values);
+        $error = $validator->validate($_POST, $values);
 
         if(!$error) {
-            #$content->setError(true);
-            return $responseEngine->render(
-                $request,
-                "SFW2\\Guestbook\\UnlockEntry",
-                $values
-            );
+            return
+                $responseEngine->
+                render($request, ['sfw2_payload' => $values])->
+                withStatus(StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY);
         }
 
         $unlockHash = md5(openssl_random_pseudo_bytes(64));
 
-        $this->sendRequestMail(
-            $values['message']['value'],
+        $message = $this->getEMailText(
+            $this->getUrl($request) . "?do=deleteEntryByHash&hash=$unlockHash",
+            $this->getUrl($request) . "?do=unlockEntryByHash&hash=$unlockHash",
             $values['name']['value'],
             $values['location']['value'],
-            $values['email']['value'],
-            $unlockHash
+            $values['message']['value']
+            //$values['email']['value'], TODO: Respect given e-mail
         );
 
+        $this->sendRequestMail(
+            $message,
+            "Neuer Gästebucheintrag von '" . htmlspecialchars($values['name']['value']) . "'",
+            (string)$request->getAttribute('sfw2_project')['default_sender_address'],
+            (string)$request->getAttribute('sfw2_project')['management_mail_address'],
+            (string)$request->getAttribute('sfw2_project')['webmaster_mail_address']
+        );
+
+
+    /*
         $stmt =
             "INSERT INTO `{TABLE_PREFIX}_guestbook` " .
             "SET `CreationDate` = NOW(), " .
@@ -244,6 +253,14 @@ class Guestbook extends AbstractController {
             "`PathId` = '%d', " .
             "`UnlockHash` = '%s', " .
             "`Visible` = '0' ";
+    */
+
+        $stmt =
+            "INSERT INTO `{TABLE_PREFIX}_guestbook` ( " .
+            " `CreationDate`, `Message`, `Name`, `Location`,`EMail`,`PathId`,`UnlockHash`, `Visible` ".
+            ") VALUES(" .
+            "'2034-11-25 16:15:00', %s, %s, %s, %s, %s, %s, '0')";
+
 
         $this->database->insert(
             $stmt,
@@ -280,9 +297,9 @@ class Guestbook extends AbstractController {
         $email = trim($email);
         $location = htmlspecialchars(trim($location));
 
-       # if($email != '') {
-       #     $author = $this->getEMail($email, $author, '');
-       # }
+        if($email != '') {
+            $author = $this->getEMail($email, $author, '');
+        }
 
         if($location != '') {
             $author .= ' aus ' . $location;
@@ -291,51 +308,24 @@ class Guestbook extends AbstractController {
     }
 
     /**
-     * @throws Exception
+     * @throws HttpInternalServerError
      */
-    protected function sendRequestMail(string $message, string $name, string $location, string $email, string $unlockHash) : void {
-
-        $emailTo = 'vorstand@springer-singgemeinschaft.de'; // FIXME
-
-        $urlDelete =
-            $_SERVER['REQUEST_SCHEME'] . '://' .
-            $_SERVER['HTTP_HOST'] . $this->path .
-            '?do=deleteEntryByHash&hash=' . $unlockHash;
-
-        $urlUnlock =
-            $_SERVER['REQUEST_SCHEME'] . '://' .
-            $_SERVER['HTTP_HOST'] . $this->path .
-            '?do=unlockEntryByHash&hash=' . $unlockHash;
-
-        $text =
-            "Es gibt einen neuen Gästebucheintrag." . PHP_EOL .
-            "Am " . date("m.d.Y") . " um " . date("H:i") . " " .
-            "Uhr schrieb '" . htmlspecialchars($name) . "' " .
-            "aus '" . htmlspecialchars($location) . "' folgende Nachricht: " . PHP_EOL . PHP_EOL .
-            htmlspecialchars($message) . PHP_EOL . PHP_EOL .
-            "<hr>" .
-            "soll diese Nachricht freigeschaltet werden? " . PHP_EOL . PHP_EOL .
-            '<a href="' . $urlUnlock . '">ja, bitte freischalten</a>' . PHP_EOL . PHP_EOL .
-            '<a href="' . $urlDelete . '">nein, bitte unverzüglich löschen</a>' . PHP_EOL . PHP_EOL;
-
-        $text = nl2br($text);
-
-        $subject = "Neuer Gästebucheintrag von '" . htmlspecialchars($name) . "'";
-
+    protected function sendRequestMail(string $message, string $subject, string $from, string $to, string $bcc) : void
+    {
         $headers = [
             "MIME-Version" => "1.0",
             "Content-type" => "text/html; charset=utf-8",
-            "From" => "noreply@springer-singgemeinschaft.de",
-            "Bcc" => "stefan.paproth@springer-singgemeinschaft.de" // FIXME
+            "From" => $from,
+            "Bcc" => $bcc,
         ];
 
-        if(!mail($emailTo, $subject, $text, $headers)) {
-            throw new Exception("Could not send body <$text> to <$emailTo>");
+        if(!mail($to, $subject, $message, $headers)) {
+            throw new HttpInternalServerError("Could not send body <$message> to <$to>");
         }
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function getEntries(bool $truncateMessage, int $pathId): array {
 
@@ -366,7 +356,7 @@ class Guestbook extends AbstractController {
 
     // TODO: Make this a trait
     /**
-     * @throws \Exception
+     * @throws Exception
      * @deprecated
      */
     protected function getShortDate($date = 'now', string $dateTimeZone = 'Europe/Berlin'): bool|string
@@ -385,6 +375,26 @@ class Guestbook extends AbstractController {
             );
 
         return $local_date->format(new DateTime($date, new DateTimeZone($dateTimeZone)));
+    }
+
+    protected function getEMailText(string $urlDelete, string $urlUnlock, string $name, string $location, string $message): string
+    {
+        if($location !== '') {
+            $location = "aus '" . htmlspecialchars($location) . "' ";
+        }
+
+        $text =
+            "Es gibt einen neuen Gästebucheintrag." . PHP_EOL .
+            "Am " . date("m.d.Y") . " um " . date("H:i") . " " .
+            "Uhr schrieb '" . htmlspecialchars($name) . "' " . $location .
+            "folgende Nachricht: " . PHP_EOL . PHP_EOL .
+            htmlspecialchars($message) . PHP_EOL . PHP_EOL .
+            "<hr>" .
+            "soll diese Nachricht freigeschaltet werden? " . PHP_EOL . PHP_EOL .
+            '<a href="' . $urlUnlock . '">ja, bitte freischalten</a>' . PHP_EOL . PHP_EOL .
+            '<a href="' . $urlDelete . '">nein, bitte unverzüglich löschen</a>' . PHP_EOL . PHP_EOL;
+
+        return nl2br($text);
     }
 }
 
