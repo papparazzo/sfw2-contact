@@ -27,7 +27,14 @@
     {{description}}
 </div>
 <div class="pt-3 pb-5">
-    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#editDialogModal" data-sfw2-form-id="{{sfw2_routing.path_simplified}}">
+    <button
+        type="button"
+        class="btn btn-secondary"
+        data-bs-toggle="modal"
+        data-bs-target="#sfw2-dialog-modal"
+        data-sfw2-form-id="{{sfw2_routing.path_simplified}}"
+        data-sfw2-url="{{sfw2_routing.path}}"
+    >
         Ins Gästebuch eintragen...
     </button>
 </div>
@@ -44,7 +51,7 @@
             <div class="form-text invalid-feedback">fehler</div>
         </div>
         <div class="mb-3">
-            <input type="location" class="form-control " placeholder="Ort" name="location"
+            <input type="text" class="form-control " placeholder="Ort" name="location"
                    required="required">
             <div class="invalid-feedback">fehler</div>
         </div>
