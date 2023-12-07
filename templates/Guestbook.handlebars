@@ -26,6 +26,7 @@
 <div class="pb-3">
     {{description}}
 </div>
+{{#if sfw2_authority.create}}
 <div class="pt-3 pb-5">
     <button
         type="button"
@@ -38,7 +39,7 @@
         Ins Gästebuch eintragen...
     </button>
 </div>
-
+{{/if}}
 <div id="{{sfw2_routing.path_simplified}}" class="d-none">
     <form class="needs-validation" novalidate>
         <div class="alert alert-info" role="alert">
