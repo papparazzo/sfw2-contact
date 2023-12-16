@@ -85,7 +85,8 @@ class Guestbook extends AbstractController {
      * @throws HttpUnprocessableContent
      * @noinspection PhpUnused
      */
-    public function unlockEntryByHash(Request $request, ResponseEngine $responseEngine): Response {
+    public function unlockEntryByHash(Request $request, ResponseEngine $responseEngine): Response
+    {
         // FIXME replace filter_input
         $hash = filter_input(INPUT_GET, 'hash', FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[a-f0-9]{32}$/"]]);
         if($hash === false || is_null($hash)) {
@@ -119,7 +120,8 @@ class Guestbook extends AbstractController {
      * @throws HttpUnprocessableContent
      * @noinspection PhpUnused
      */
-    public function deleteEntryByHash(Request $request, ResponseEngine $responseEngine): Response {
+    public function deleteEntryByHash(Request $request, ResponseEngine $responseEngine): Response
+    {
         $hash = filter_input(INPUT_GET, 'hash', FILTER_VALIDATE_REGEXP, ["options" => ["regexp" => "/^[a-f0-9]{32}$/"]]);
 
         if($hash === false || is_null($hash)) {
@@ -178,7 +180,8 @@ class Guestbook extends AbstractController {
      * @throws HttpUnprocessableContent
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function delete(Request $request, ResponseEngine $responseEngine): Response {
+    public function delete(Request $request, ResponseEngine $responseEngine): Response
+    {
 
         $entryId = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         if($entryId === false) {
@@ -241,8 +244,6 @@ class Guestbook extends AbstractController {
             (string)$request->getAttribute('sfw2_project')['webmaster_mail_address']
         );
 
-
-    /*
         $stmt =
             "INSERT INTO `{TABLE_PREFIX}_guestbook` " .
             "SET `CreationDate` = NOW(), " .
@@ -253,14 +254,6 @@ class Guestbook extends AbstractController {
             "`PathId` = '%d', " .
             "`UnlockHash` = '%s', " .
             "`Visible` = '0' ";
-    */
-
-        $stmt =
-            "INSERT INTO `{TABLE_PREFIX}_guestbook` ( " .
-            " `CreationDate`, `Message`, `Name`, `Location`,`EMail`,`PathId`,`UnlockHash`, `Visible` ".
-            ") VALUES(" .
-            "'2034-11-25 16:15:00', %s, %s, %s, %s, %s, %s, '0')";
-
 
         $this->database->insert(
             $stmt,
@@ -277,7 +270,8 @@ class Guestbook extends AbstractController {
         return $responseEngine->render($request);
     }
 
-    protected function getFormatedMessage(string $text, bool $truncated = false) : string {
+    protected function getFormatedMessage(string $text, bool $truncated = false) : string
+    {
         $maxLength = 200;
 
         if(strlen($text) > $maxLength && $truncated) {
@@ -292,7 +286,8 @@ class Guestbook extends AbstractController {
         return nl2br(htmlspecialchars($text));
     }
 
-    protected function getAuthor(string $name, string $location, string $email) : string {
+    protected function getAuthor(string $name, string $location, string $email) : string
+    {
         $author = htmlspecialchars(trim($name));
         $email = trim($email);
         $location = htmlspecialchars(trim($location));
@@ -327,7 +322,8 @@ class Guestbook extends AbstractController {
     /**
      * @throws Exception
      */
-    protected function getEntries(bool $truncateMessage, int $pathId): array {
+    protected function getEntries(bool $truncateMessage, int $pathId): array
+    {
 
         $stmt =
             "SELECT `Id`, `CreationDate`, `Message`, `Name`, `Location`, `Email` " .
