@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8f92df696ffb0521739c042ba1d76657",
+    "content-hash": "4aeecc0b26859736081de6bc74c8f4cc",
     "packages": [
         {
             "name": "fig/http-message-util",
@@ -496,20 +496,21 @@
         },
         {
             "name": "sfw2/core",
-            "version": "3.1.0",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:papparazzo/sfw2-core.git",
-                "reference": "69b67ba0f940248b3ae26df64cc33e5fce1d4d91"
+                "reference": "10dab25fe7fb9f1b1cfbf0db46a12174c51c16c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/papparazzo/sfw2-core/zipball/69b67ba0f940248b3ae26df64cc33e5fce1d4d91",
-                "reference": "69b67ba0f940248b3ae26df64cc33e5fce1d4d91",
+                "url": "https://api.github.com/repos/papparazzo/sfw2-core/zipball/10dab25fe7fb9f1b1cfbf0db46a12174c51c16c2",
+                "reference": "10dab25fe7fb9f1b1cfbf0db46a12174c51c16c2",
                 "shasum": ""
             },
             "require": {
                 "ext-gd": "*",
+                "ext-intl": "*",
                 "ext-mbstring": "*",
                 "fig/http-message-util": "^1.1.5",
                 "php": "^8.1",
@@ -524,7 +525,7 @@
             "license": [
                 "GNU AFFERO GENERAL PUBLIC LICENSE Version 3"
             ],
-            "time": "2023-10-28T07:19:33+00:00"
+            "time": "2023-11-25T10:41:56+00:00"
         },
         {
             "name": "sfw2/database",
@@ -561,16 +562,16 @@
         },
         {
             "name": "sfw2/routing",
-            "version": "5.0.0",
+            "version": "5.2.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:papparazzo/sfw2-routing.git",
-                "reference": "5d96e9f45b59d887af5667de22e753c232e5ec60"
+                "reference": "0185642805a48ad0fb537f0db98cbd8709ca3aa1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/papparazzo/sfw2-routing/zipball/5d96e9f45b59d887af5667de22e753c232e5ec60",
-                "reference": "5d96e9f45b59d887af5667de22e753c232e5ec60",
+                "url": "https://api.github.com/repos/papparazzo/sfw2-routing/zipball/0185642805a48ad0fb537f0db98cbd8709ca3aa1",
+                "reference": "0185642805a48ad0fb537f0db98cbd8709ca3aa1",
                 "shasum": ""
             },
             "require": {
@@ -598,7 +599,7 @@
             "license": [
                 "GNU AFFERO GENERAL PUBLIC LICENSE Version 3"
             ],
-            "time": "2023-11-16T19:30:00+00:00"
+            "time": "2023-11-19T09:29:16+00:00"
         },
         {
             "name": "sfw2/validator",
