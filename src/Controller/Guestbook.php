@@ -22,19 +22,18 @@
 
 namespace SFW2\Guestbook\Controller;
 
-use DateTime;
-use DateTimeZone;
 use Exception;
 use Fig\Http\Message\StatusCodeInterface;
-use IntlDateFormatter;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use SFW2\Core\HttpExceptions\HttpInternalServerError;
+use SFW2\Core\HttpExceptions\HttpNotFound;
 use SFW2\Core\HttpExceptions\HttpUnprocessableContent;
+use SFW2\Core\Utils\DateTimeHelper;
 use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\AbstractController;
 
-use SFW2\Routing\HelperTraits\getPathTrait;
+use SFW2\Routing\HelperTraits\getRoutingDataTrait;
 use SFW2\Routing\HelperTraits\getUrlTrait;
 use SFW2\Routing\ResponseEngine;
 use SFW2\Validator\Ruleset;
@@ -47,17 +46,15 @@ use SFW2\Validator\Validators\IsTrue;
 
 class Guestbook extends AbstractController {
 
-    use getPathTrait;
     use getUrlTrait;
-
-   # use DateTimeHelperTrait;
-  #  use EMailHelperTrait;
+    use getRoutingDataTrait;
 
     protected string $title;
     protected string $description;
 
     public function __construct(
-        protected DatabaseInterface $database
+        protected DatabaseInterface $database,
+        protected DateTimeHelper $dateTimeHelper
     ) {
         $this->title = 'Gästebuch';
         $this->description = 'Hier ist unser Gästebuch. Wenn Du magst dann lass einen Eintrag zurück.';
@@ -83,6 +80,7 @@ class Guestbook extends AbstractController {
 
     /**
      * @throws HttpUnprocessableContent
+     * @throws HttpNotFound
      * @noinspection PhpUnused
      */
     public function unlockEntryByHash(Request $request, ResponseEngine $responseEngine): Response
@@ -102,12 +100,11 @@ class Guestbook extends AbstractController {
         if($this->database->update($stmt, [$hash, $this->getPathId($request)]) != 1) {
             $content['error'] = true;
             $content['text'] = 'Entweder wurde der Eintrag bereits freigeschaltet oder gelöscht!';
-            $content['url_back'] = $this->getPath($request);
         } else {
             $content['error'] = false;
             $content['text'] = 'Der Gästebucheintrag wurde erfolgreich freigeschaltet und ist nun für alle sichtbar.';
-            $content['url_back'] = $this->getPath($request);
         }
+        $content['url_back'] = $this->getPath($request);
 
         return $responseEngine->render(
             $request,
@@ -118,6 +115,8 @@ class Guestbook extends AbstractController {
 
     /**
      * @throws HttpUnprocessableContent
+     * @throws HttpNotFound
+     * @throws Exception
      * @noinspection PhpUnused
      */
     public function deleteEntryByHash(Request $request, ResponseEngine $responseEngine): Response
@@ -149,7 +148,7 @@ class Guestbook extends AbstractController {
         if(!$confirmed) {
             $content['url_delete'   ] = "?do=deleteEntryByHash&hash=$hash&confirmed=1";
             $content['confirm'      ]   = true;
-            $content['creation_date'] = $this->getShortDate($entry['CreationDate']);
+            $content['creation_date'] = $this->dateTimeHelper->getDate(DateTimeHelper::FULL_DATE, $entry['CreationDate']);
             $content['message'      ] = $this->getFormatedMessage($entry['Message']);
             $content['author'       ] = $this->getAuthor($entry['Name'], $entry['Location'], $entry["Email"]);
             $content['url_back'     ] = $this->getPath($request);
@@ -178,11 +177,11 @@ class Guestbook extends AbstractController {
 
     /**
      * @throws HttpUnprocessableContent
+     * @throws HttpNotFound
      * @noinspection PhpMissingParentCallCommonInspection
      */
     public function delete(Request $request, ResponseEngine $responseEngine): Response
     {
-
         $entryId = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         if($entryId === false) {
             throw new HttpUnprocessableContent("invalid hash given");
@@ -201,6 +200,7 @@ class Guestbook extends AbstractController {
 
     /**
      * @throws HttpInternalServerError
+     * @throws HttpNotFound
      * @noinspection PhpMissingParentCallCommonInspection
      */
     public function create(Request $request, ResponseEngine $responseEngine): Response
@@ -325,7 +325,7 @@ class Guestbook extends AbstractController {
     protected function getEntries(bool $truncateMessage, int $pathId): array
     {
 
-        $stmt =
+        $stmt = /** @lang MySQL */
             "SELECT `Id`, `CreationDate`, `Message`, `Name`, `Location`, `Email` " .
             "FROM `{TABLE_PREFIX}_guestbook` AS `guestbook` " .
             "WHERE `PathId` = %s AND `Visible` = '1' " .
@@ -337,7 +337,7 @@ class Guestbook extends AbstractController {
         $i = 0;
         $entries = [];
         foreach($rows as $row) {
-            $cd = $this->getShortDate($row['CreationDate']);
+            $cd = $this->dateTimeHelper->getDate(DateTimeHelper::FULL_DATE, $row['CreationDate']);
 
             $entry = [];
             $entry['id'      ] = $row['Id'];
@@ -348,29 +348,6 @@ class Guestbook extends AbstractController {
             $entries[] = $entry;
         }
         return $entries;
-    }
-
-    // TODO: Make this a trait
-    /**
-     * @throws Exception
-     * @deprecated
-     */
-    protected function getShortDate($date = 'now', string $dateTimeZone = 'Europe/Berlin'): bool|string
-    {
-        if($date === null) {
-            return '';
-        }
-
-         $local_date = IntlDateFormatter::create(
-                'de',
-                IntlDateFormatter::LONG,
-                IntlDateFormatter::NONE,
-                $dateTimeZone,
-                null,
-                null
-            );
-
-        return $local_date->format(new DateTime($date, new DateTimeZone($dateTimeZone)));
     }
 
     protected function getEMailText(string $urlDelete, string $urlUnlock, string $name, string $location, string $message): string
