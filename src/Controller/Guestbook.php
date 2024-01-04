@@ -26,10 +26,10 @@ use Exception;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use SFW2\Core\HttpExceptions\HttpInternalServerError;
 use SFW2\Core\HttpExceptions\HttpNotFound;
 use SFW2\Core\HttpExceptions\HttpUnprocessableContent;
 use SFW2\Core\Utils\DateTimeHelper;
+use SFW2\Core\Utils\Mailer;
 use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\AbstractController;
 
@@ -54,7 +54,8 @@ class Guestbook extends AbstractController {
 
     public function __construct(
         protected DatabaseInterface $database,
-        protected DateTimeHelper $dateTimeHelper
+        protected DateTimeHelper $dateTimeHelper,
+        private readonly Mailer $mailer
     ) {
         $this->title = 'Gästebuch';
         $this->description = 'Hier ist unser Gästebuch. Wenn Du magst dann lass einen Eintrag zurück.';
@@ -227,21 +228,23 @@ class Guestbook extends AbstractController {
 
         $unlockHash = md5(openssl_random_pseudo_bytes(64));
 
-        $message = $this->getEMailText(
-            $this->getUrl($request) . "?do=deleteEntryByHash&hash=$unlockHash",
-            $this->getUrl($request) . "?do=unlockEntryByHash&hash=$unlockHash",
-            $values['name']['value'],
-            $values['location']['value'],
-            $values['message']['value']
-            //$values['email']['value'], TODO: Respect given e-mail
-        );
 
-        $this->sendRequestMail(
-            $message,
-            "Neuer Gästebucheintrag von '" . htmlspecialchars($values['name']['value']) . "'",
-            (string)$request->getAttribute('sfw2_project')['default_sender_address'],
-            (string)$request->getAttribute('sfw2_project')['management_mail_address'],
-            (string)$request->getAttribute('sfw2_project')['webmaster_mail_address']
+        $data = [
+            'date' => date("m.d.Y"),
+            'time' => date("H:i"),
+            'name' => $values['name']['value'],
+            'email' => $values['email']['value'],
+            'location' => $values['location']['value'] ?: '<unbekannt>',
+            'message' => $values['message']['value'],
+            'url_unlock' => $this->getUrl($request) . "?do=unlockEntryByHash&hash=$unlockHash",
+            'url_delete' => $this->getUrl($request) . "?do=deleteEntryByHash&hash=$unlockHash"
+        ];
+
+        $this->mailer->send(
+            $request->getAttribute('sfw2_project')['webmaster_mail_address'],
+            "Neuer Gästebucheintrag von '{{name}}'",
+            "SFW2\\Guestbook\\GuestbookMailTemplate",
+            $data
         );
 
         $stmt =
