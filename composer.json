@@ -25,9 +25,9 @@
         "ext-intl": "*",
         "ext-openssl": "*",
 
-        "sfw2/core": "^3.0",
+        "sfw2/core": "^5.0",
         "sfw2/database": "^2.0",
-        "sfw2/routing": "^5.0",
+        "sfw2/routing": "^7.0",
         "sfw2/validator": "^6.0"
     },
     "autoload": {
