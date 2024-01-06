@@ -72,11 +72,7 @@ class Guestbook extends AbstractController {
             'entries' => $this->getEntries(false, $this->getPathId($request))
         ];
 
-        return $responseEngine->render(
-            $request,
-            $content,
-            "SFW2\\Guestbook\\Guestbook"
-        );
+        return $responseEngine->render($request, $content, "SFW2\\Guestbook\\Guestbook");
     }
 
     /**
@@ -107,11 +103,7 @@ class Guestbook extends AbstractController {
         }
         $content['url_back'] = $this->getPath($request);
 
-        return $responseEngine->render(
-            $request,
-            $content,
-            "SFW2\\Guestbook\\UnlockEntry"
-        );
+        return $responseEngine->render($request, $content, "SFW2\\Guestbook\\UnlockEntry");
     }
 
     /**
@@ -138,11 +130,7 @@ class Guestbook extends AbstractController {
             $content['error'] = true;
             $content['text'] = 'Der Eintrag wurde bereits gelöscht!';
 
-            return $responseEngine->render(
-                $request,
-                $content,
-                "SFW2\\Guestbook\\UnlockEntry"
-            );
+            return $responseEngine->render($request, $content, "SFW2\\Guestbook\\UnlockEntry");
         }
 
         $confirmed = filter_input(INPUT_GET, 'confirmed', FILTER_VALIDATE_BOOLEAN);
@@ -154,11 +142,7 @@ class Guestbook extends AbstractController {
             $content['author'       ] = $this->getAuthor($entry['Name'], $entry['Location'], $entry["Email"]);
             $content['url_back'     ] = $this->getPath($request);
 
-            return $responseEngine->render(
-                $request,
-                $content,
-                "SFW2\\Guestbook\\UnlockEntry"
-            );
+            return $responseEngine->render($request, $content, "SFW2\\Guestbook\\UnlockEntry");
         }
 
         $stmt = "DELETE FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = %s";
@@ -169,11 +153,7 @@ class Guestbook extends AbstractController {
         $content['text'] = 'Der Gästebucheintrag wurde erfolgreich gelöscht.';
         $content['confirm'] = false;
 
-        return $responseEngine->render(
-            $request,
-            $content,
-            "SFW2\\Guestbook\\UnlockEntry"
-        );
+        return $responseEngine->render($request, $content, "SFW2\\Guestbook\\UnlockEntry");
     }
 
     /**
@@ -200,17 +180,18 @@ class Guestbook extends AbstractController {
     }
 
     /**
-     * @throws HttpInternalServerError
      * @throws HttpNotFound
+     * @throws Exception
      * @noinspection PhpMissingParentCallCommonInspection
      */
     public function create(Request $request, ResponseEngine $responseEngine): Response
     {
+        
         $rulset = new Ruleset();
         $rulset->addNewRules('name', new IsNotEmpty());
         $rulset->addNewRules('location', new IsAvailable());
         $rulset->addNewRules('message', new IsNotEmpty());
-        $rulset->addNewRules('email', new IsEMailAddress()); // TODO: enable e-mail in formular
+        $rulset->addNewRules('email', new IsEMailAddress());
         $rulset->addNewRules('terms', new IsTrue());
 
         $values = [];
