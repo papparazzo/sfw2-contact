@@ -47,24 +47,29 @@
             Sollte Dein Eintrag also nicht sofort sichtbar sein dann hab ein wenig geduld und schaue später nochmal vorbei...
         </div>
         <div class="mb-3">
-            <input type="text" class="form-control " placeholder="Name" name="name"
-                   required="required">
-            <div class="form-text invalid-feedback">fehler</div>
-        </div>
-        <div class="mb-3">
-            <input type="text" class="form-control " placeholder="Ort" name="location"
-                   required="required">
+            <label for="{{sfw2_routing.path_simplified}}_name" class="form-label text-body-secondary">Name</label>
+            <input id="{{sfw2_routing.path_simplified}}_name" type="text" class="form-control" name="name" required="required">
             <div class="invalid-feedback">fehler</div>
         </div>
         <div class="mb-3">
-            <textarea placeholder="Deine Nachricht" class="form-control " style="height: 8rem;"
-                      name="message" required="required"></textarea>
+            <label for="{{sfw2_routing.path_simplified}}_email" class="form-label text-body-secondary">E-Mailadresse (optional)</label>
+            <input id="{{sfw2_routing.path_simplified}}_email" type="text" class="form-control" name="email">
+            <div class="invalid-feedback">fehler</div>
+        </div>
+        <div class="mb-3">
+            <label for="{{sfw2_routing.path_simplified}}_location" class="form-label text-body-secondary">Ort (optional)</label>
+            <input id="{{sfw2_routing.path_simplified}}_location" type="text" class="form-control" name="location">
+            <div class="invalid-feedback">fehler</div>
+        </div>
+        <div class="mb-3">
+            <label for="{{sfw2_routing.path_simplified}}_message" class="form-label text-body-secondary">Deine Nachricht</label>
+            <textarea id="{{sfw2_routing.path_simplified}}_message" class="form-control " style="height: 8rem;" name="message" required="required"></textarea>
             <div class="invalid-feedback">fehler</div>
         </div>
         <div class="mb-3">
             <div class="form-check">
-                <input class="form-check-input" name="terms" type="checkbox" id="termsX" value="1">
-                <label class="form-check-label" for="termsX">
+                <input class="form-check-input" name="terms" type="checkbox" id="{{sfw2_routing.path_simplified}}_terms" value="1">
+                <label class="form-check-label text-body-secondary" for="{{sfw2_routing.path_simplified}}_terms">
                     Ich habe die <a class="text-reset" href="/datenschutz">Datenschutz­erklärung</a> gelesen
                 </label>
                 <div class="invalid-feedback">Fehler</div>
