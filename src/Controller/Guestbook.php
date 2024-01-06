@@ -139,7 +139,7 @@ class Guestbook extends AbstractController {
             $content['confirm'      ]   = true;
             $content['creation_date'] = $this->dateTimeHelper->getDate(DateTimeHelper::FULL_DATE, $entry['CreationDate']);
             $content['message'      ] = $this->getFormatedMessage($entry['Message']);
-            $content['author'       ] = $this->getAuthor($entry['Name'], $entry['Location'], $entry["Email"]);
+            $content['author'       ] = $this->getAuthor($entry['Name'], $entry['Location']);
             $content['url_back'     ] = $this->getPath($request);
 
             return $responseEngine->render($request, $content, "SFW2\\Guestbook\\UnlockEntry");
@@ -270,15 +270,10 @@ class Guestbook extends AbstractController {
         return nl2br(htmlspecialchars($text));
     }
 
-    protected function getAuthor(string $name, string $location, string $email) : string
+    protected function getAuthor(string $name, string $location) : string
     {
         $author = htmlspecialchars(trim($name));
-        $email = trim($email);
         $location = htmlspecialchars(trim($location));
-
-        if($email != '') {
-            $author = $this->getEMail($email, $author, '');
-        }
 
         if($location != '') {
             $author .= ' aus ' . $location;
@@ -311,7 +306,7 @@ class Guestbook extends AbstractController {
             $entry['nb'      ] = str_pad(++$i, $max, '0', STR_PAD_LEFT);
             $entry['date'    ] = $cd;
             $entry['message' ] = $this->getFormatedMessage($row['Message'], $truncateMessage);
-            $entry['author'  ] = $this->getAuthor($row['Name'], $row['Location'], $row["Email"]);
+            $entry['author'  ] = $this->getAuthor($row['Name'], $row['Location']);
             $entries[] = $entry;
         }
         return $entries;
