@@ -231,12 +231,12 @@ class Guestbook extends AbstractController {
         $stmt =
             "INSERT INTO `{TABLE_PREFIX}_guestbook` " .
             "SET `CreationDate` = NOW(), " .
-            "`Message` = '%s', " .
-            "`Name` = '%s', " .
-            "`Location` = '%s', " .
-            "`EMail` = '%s', " .
-            "`PathId` = '%d', " .
-            "`UnlockHash` = '%s', " .
+            "`Message` = %s, " .
+            "`Name` = %s, " .
+            "`Location` = %s, " .
+            "`EMail` = %s, " .
+            "`PathId` = %s, " .
+            "`UnlockHash` = %s, " .
             "`Visible` = '0' ";
 
         $this->database->insert(
