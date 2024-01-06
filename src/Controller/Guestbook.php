@@ -287,23 +287,6 @@ class Guestbook extends AbstractController {
     }
 
     /**
-     * @throws HttpInternalServerError
-     */
-    protected function sendRequestMail(string $message, string $subject, string $from, string $to, string $bcc) : void
-    {
-        $headers = [
-            "MIME-Version" => "1.0",
-            "Content-type" => "text/html; charset=utf-8",
-            "From" => $from,
-            "Bcc" => $bcc,
-        ];
-
-        if(!mail($to, $subject, $message, $headers)) {
-            throw new HttpInternalServerError("Could not send body <$message> to <$to>");
-        }
-    }
-
-    /**
      * @throws Exception
      */
     protected function getEntries(bool $truncateMessage, int $pathId): array
@@ -332,26 +315,6 @@ class Guestbook extends AbstractController {
             $entries[] = $entry;
         }
         return $entries;
-    }
-
-    protected function getEMailText(string $urlDelete, string $urlUnlock, string $name, string $location, string $message): string
-    {
-        if($location !== '') {
-            $location = "aus '" . htmlspecialchars($location) . "' ";
-        }
-
-        $text =
-            "Es gibt einen neuen Gästebucheintrag." . PHP_EOL .
-            "Am " . date("m.d.Y") . " um " . date("H:i") . " " .
-            "Uhr schrieb '" . htmlspecialchars($name) . "' " . $location .
-            "folgende Nachricht: " . PHP_EOL . PHP_EOL .
-            htmlspecialchars($message) . PHP_EOL . PHP_EOL .
-            "<hr>" .
-            "soll diese Nachricht freigeschaltet werden? " . PHP_EOL . PHP_EOL .
-            '<a href="' . $urlUnlock . '">ja, bitte freischalten</a>' . PHP_EOL . PHP_EOL .
-            '<a href="' . $urlDelete . '">nein, bitte unverzüglich löschen</a>' . PHP_EOL . PHP_EOL;
-
-        return nl2br($text);
     }
 }
 
