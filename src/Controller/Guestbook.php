@@ -191,7 +191,6 @@ final class Guestbook extends AbstractController {
      */
     public function create(Request $request, ResponseEngine $responseEngine): Response
     {
-        
         $rulset = new Ruleset();
         $rulset->addNewRules('name', new IsNotEmpty());
         $rulset->addNewRules('location', new IsAvailable());
@@ -213,7 +212,6 @@ final class Guestbook extends AbstractController {
         }
 
         $unlockHash = md5(openssl_random_pseudo_bytes(64));
-
 
         $data = [
             'date' => date("m.d.Y"),
