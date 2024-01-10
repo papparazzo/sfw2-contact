@@ -28,6 +28,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use SFW2\Core\HttpExceptions\HttpNotFound;
 use SFW2\Core\HttpExceptions\HttpUnprocessableContent;
+use SFW2\Core\Permission\AccessType;
+use SFW2\Core\Permission\PermissionInterface;
 use SFW2\Core\Utils\DateTimeHelper;
 use SFW2\Core\Utils\Mailer;
 use SFW2\Database\DatabaseInterface;
@@ -44,7 +46,7 @@ use SFW2\Validator\Validators\IsEMailAddress;
 use SFW2\Validator\Validators\IsTrue;
 
 
-class Guestbook extends AbstractController {
+final class Guestbook extends AbstractController {
 
     use getUrlTrait;
     use getRoutingDataTrait;
@@ -53,9 +55,10 @@ class Guestbook extends AbstractController {
     protected string $description;
 
     public function __construct(
-        protected DatabaseInterface $database,
-        protected DateTimeHelper $dateTimeHelper,
-        private readonly Mailer $mailer
+        private readonly DatabaseInterface $database,
+        private readonly DateTimeHelper $dateTimeHelper,
+        private readonly Mailer $mailer,
+        private readonly PermissionInterface $permission
     ) {
         $this->title = 'Gästebuch';
         $this->description = 'Hier ist unser Gästebuch. Wenn Du magst dann lass einen Eintrag zurück.';
@@ -66,10 +69,12 @@ class Guestbook extends AbstractController {
      */
     public function index(Request $request, ResponseEngine $responseEngine): Response
     {
+        $pathId = $this->getPathId($request);
         $content = [
             'title' => $this->title,
             'description' => $this->description,
-            'entries' => $this->getEntries(false, $this->getPathId($request))
+            'entries' => $this->getEntries(false, $this->getPathId($request)),
+            'create_allowed' => $this->permission->checkPermission($pathId, 'create') !== AccessType::VORBIDDEN
         ];
 
         return $responseEngine->render($request, $content, "SFW2\\Guestbook\\Guestbook");
@@ -121,7 +126,8 @@ class Guestbook extends AbstractController {
         }
 
         $content = [
-            'confirm' => false
+            'confirm' => false,
+            'url_back' => $this->getPath($request)
         ];
 
         $stmt = "SELECT * FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = %s AND PathId = %s";
@@ -140,7 +146,6 @@ class Guestbook extends AbstractController {
             $content['creation_date'] = $this->dateTimeHelper->getDate(DateTimeHelper::FULL_DATE, $entry['CreationDate']);
             $content['message'      ] = $this->getFormatedMessage($entry['Message']);
             $content['author'       ] = $this->getAuthor($entry['Name'], $entry['Location']);
-            $content['url_back'     ] = $this->getPath($request);
 
             return $responseEngine->render($request, $content, "SFW2\\Guestbook\\UnlockEntry");
         }
@@ -251,7 +256,11 @@ class Guestbook extends AbstractController {
             ]
         );
 
-        return $responseEngine->render($request);
+        return $responseEngine->render($request, [
+            'title' => 'Gästebucheintrag',
+            'description' => 'Eintrag wurde erfolgreich angelegt. Bitte habe ein wenig Geduld bis dein Eintrag freigeschaltet wird',
+            'reload' => false
+        ]);
     }
 
     protected function getFormatedMessage(string $text, bool $truncated = false) : string
