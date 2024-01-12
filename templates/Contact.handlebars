@@ -1,0 +1,66 @@
+<div>
+    <h4 class="mb-3 text-decoration-underline">{{title}}</h4>
+    <div class="row">
+        <div class="col me-lg-5">
+            <p>
+                {{description}}
+            </p>
+            <ul class="list-unstyled li-space-lg">
+                <li>
+                    <i class="bi bi-geo-alt me-2"></i>{{{location}}}
+                </li>
+                <li>&#160;</li>
+                <li>
+                    <i class="bi bi-telephone me-2"></i>
+                    <a class="mail text-reset" href="tel:{{#sanitize_phone_nb phone}}">{{phone}}</a>
+                </li>
+                <li>
+                    <i class="bi bi-envelope me-2"></i>
+                    <a class="mail text-reset" href="mailto:{{mail}}">{{mail}}</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col ms-lg-5">
+            <form id="{{sfw2_routing.path_simplified}}">
+                <div class="mb-3">
+                    <input type="text" class="form-control " placeholder="Name" name="name" required="required" />
+                    <div class="form-text invalid-feedback"></div>
+                </div>
+                <div class="mb-3">
+                    <input type="email" class="form-control " placeholder="E-Mail" name="email" required="required" />
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="mb-3">
+                    <textarea
+                        placeholder="Deine Nachricht" class="form-control " style="height: 8rem;"
+                        name="message" required="required"
+                    ></textarea>
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" name="terms" type="checkbox" id="termsX" value="1" />
+                        <label class="form-check-label" for="termsX">
+                            Ich habe die <a class="text-reset" href="/datenschutz">Datenschutz­erklärung</a> gelesen
+                        </label>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="py-3 text-end">
+                    <button
+                        data-sfw2-url="{{sfw2_routing.path}}?do=create"
+                        data-sfw2-form-id="#{{sfw2_routing.path_simplified}}"
+                        type="button"
+                        class="btn btn-secondary sfw2-button-send"
+                    >Nachricht abschicken</button>
+                </div>
+                <div class="py-3 text-end d-none">
+                    <div id="{{sfw2_routing.path_simplified}}_loader" class="sfw2-ajax-loader overlay"></div>
+                </div>
+                <div id="{{sfw2_routing.path_simplified}}_send_notification" class="alert alert-info d-none" role="alert">
+                    Nachricht erfolgreich versendet!
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
