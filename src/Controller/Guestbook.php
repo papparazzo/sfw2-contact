@@ -34,6 +34,7 @@ use SFW2\Core\Utils\DateTimeHelper;
 use SFW2\Core\Utils\Mailer;
 use SFW2\Database\DatabaseException;
 use SFW2\Database\DatabaseInterface;
+use SFW2\Database\QueryHelper;
 use SFW2\Routing\AbstractController;
 
 use SFW2\Routing\HelperTraits\getRoutingDataTrait;
@@ -133,7 +134,8 @@ final class Guestbook extends AbstractController {
         ];
 
         $stmt = "SELECT * FROM `{TABLE_PREFIX}_guestbook` WHERE `UnlockHash` = %s AND PathId = %s";
-        $entry = $this->database->selectRow($stmt, [$hash, $this->getPathId($request)]);
+        $queryHelper = new QueryHelper($this->database);
+        $entry = $queryHelper->selectRow($stmt, [$hash, $this->getPathId($request)]);
         if(empty($entry)) {
             $content['error'] = true;
             $content['text'] = 'Der Eintrag wurde bereits gelöscht!';
