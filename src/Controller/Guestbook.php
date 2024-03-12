@@ -32,6 +32,7 @@ use SFW2\Core\Permission\AccessType;
 use SFW2\Core\Permission\PermissionInterface;
 use SFW2\Core\Utils\DateTimeHelper;
 use SFW2\Core\Utils\Mailer;
+use SFW2\Database\DatabaseException;
 use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\AbstractController;
 
@@ -83,6 +84,7 @@ final class Guestbook extends AbstractController {
     /**
      * @throws HttpUnprocessableContent
      * @throws HttpNotFound
+     * @throws DatabaseException
      * @noinspection PhpUnused
      */
     public function unlockEntryByHash(Request $request, ResponseEngine $responseEngine): Response
@@ -164,6 +166,7 @@ final class Guestbook extends AbstractController {
     /**
      * @throws HttpUnprocessableContent
      * @throws HttpNotFound
+     * @throws DatabaseException
      * @noinspection PhpMissingParentCallCommonInspection
      */
     public function delete(Request $request, ResponseEngine $responseEngine): Response
