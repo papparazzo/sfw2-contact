@@ -1,5 +1,5 @@
 {
-    "name": "sfw2/guestbook",
+    "name": "sfw2/contact",
     "type": "library",
     "license": "GNU AFFERO GENERAL PUBLIC LICENSE Version 3",
 
@@ -32,7 +32,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SFW2\\Guestbook\\": "src/"
+            "SFW2\\Contact\\": "src/"
         }
     }
 }

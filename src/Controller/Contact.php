@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace SFW2\Guestbook\Controller;
+namespace SFW2\Contact\Controller;
 
 use Exception;
 use Fig\Http\Message\StatusCodeInterface;
