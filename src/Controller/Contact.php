@@ -41,23 +41,15 @@ use SFW2\Validator\Validators\IsTrue;
 
 class ContactController extends AbstractController
 {
-    public function __construct(private readonly Mailer $mailer)
-    {
+    public function __construct(
+        private readonly Mailer $mailer,
+        private readonly array $content,
+    ) {
     }
 
     public function index(Request $request, ResponseEngine $responseEngine): Response
     {
-        // TODO: get data from database
-        $content = [
-            'title' => 'Tritt mit uns in Kontakt',
-            'location' => '',
-            'description' => '',
-
-            'phone' => '',
-            'mail' => ''
-        ];
-
-        return $responseEngine->render($request, $content, "SFW2\\Guestbook\\Contact");
+        return $responseEngine->render($request, $this->content, "SFW2\\Guestbook\\Contact");
     }
 
     /**
