@@ -26,8 +26,6 @@ namespace SFW2\Contact\Controller;
 
 use Exception;
 use Fig\Http\Message\StatusCodeInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use SFW2\Core\Utils\Mailer;
@@ -39,7 +37,7 @@ use SFW2\Validator\Validators\IsEMailAddress;
 use SFW2\Validator\Validators\IsNotEmpty;
 use SFW2\Validator\Validators\IsTrue;
 
-class ContactController extends AbstractController
+class Contact extends AbstractController
 {
     public function __construct(
         private readonly Mailer $mailer,
