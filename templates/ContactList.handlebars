@@ -1,0 +1,63 @@
+<h1>Ansprechpartner</h1>
+<p>
+    Ansprechpartner bei Fragen, für Vorschläge etc.
+</p>
+<div class="alert alert-success" role="alert">
+    <strong>Anmerkung</strong>
+    <p>
+    Die aktuelle Fassung steht auch als
+    <a
+        class="link"
+        href="/verein/allgemein/download"
+    >Download</a>
+    zur Verfügung.
+    </p>
+</div>
+<?php foreach($this->entries as $k => $v): ?>
+<div style="overflow-x: auto;" >
+<table class="mt-5 text-nowrap table-sm table table-striped table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col" colspan="4"><?php echo($k); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach($v as $item): ?>
+        <tr>
+            <th>
+                <?php echo($item['position']); ?>
+            </th>
+            <td>
+                <?php echo($item['name']);?>
+            </td>
+            <td>
+                <?php echo($item['phone']);?>
+            </td>
+            <td>
+                <?php echo($item['emailaddr']);?>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+</div>
+<?php endforeach; ?>
+<div class="modificationDate">
+Stand: <?php echo($this->modificationDate); ?>
+</div>
+
+<script>
+    $(function () {
+        $('[data-toggle="popover"]').popover({
+            trigger: 'click', html: true,
+            content: '<div style="color: #929292;"><div><a class="mail " href="mailto:kathrin.fluegge@vfvconcordia.de">kathrin.fluegge<br class="noshow">@vfvconcordia.de</a>' +
+'</div><div><a class="mail " href="tel:05041972672">Tel.: 0 50 4<br class="noshow">1 / 97 26 72</a>' +
+'</div><div><a class="mail " href="tel:01602602702">Tel.: 0160 <br class="noshow">/ 26 02 70 2</a>' +
+'</div><div><a class="mail " href="https://wa.me/491602602702">WhatsApp: 0160 <br class="noshow">/ 26 02 70 2</a>' +
+'</div></div>'
+        });
+    })
+</script>
+
+
