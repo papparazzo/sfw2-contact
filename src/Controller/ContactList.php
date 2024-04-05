@@ -35,8 +35,9 @@ use SFW2\Routing\AbstractController;
 
 class ContactList extends AbstractController
 {
-    public function __construct(private readonly DatabaseInterface $database)
-    {
+    public function __construct(
+        private readonly DatabaseInterface $database
+    ) {
     }
 
     /**
