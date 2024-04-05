@@ -147,7 +147,7 @@ final class Guestbook extends AbstractController {
         if(!$confirmed) {
             $content['url_delete'   ] = "?do=deleteEntryByHash&hash=$hash&confirmed=1";
             $content['confirm'      ]   = true;
-            $content['creation_date'] = $this->dateTimeHelper->getDate(DateTimeHelper::FULL_DATE, $entry['CreationDate']);
+            $content['creation_date'] = $this->dateTimeHelper->getFullDate($entry['CreationDate']);
             $content['message'      ] = $this->getFormatedMessage($entry['Message']);
             $content['author'       ] = $this->getAuthor($entry['Name'], $entry['Location']);
 
