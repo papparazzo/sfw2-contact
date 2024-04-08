@@ -27,10 +27,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use SFW2\Database\DatabaseException;
 use SFW2\Database\DatabaseInterface;
 use SFW2\Routing\ResponseEngine;
-use SFW2\Routing\Result\Content;
-use SFW2\Controllers\Widget\Obfuscator\EMail;
-use SFW2\Controllers\Widget\Obfuscator\Phone;
-use SFW2\Controllers\Widget\Obfuscator\WhatsApp;
 use SFW2\Routing\AbstractController;
 
 class ContactList extends AbstractController
